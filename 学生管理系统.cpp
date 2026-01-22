@@ -24,6 +24,7 @@ void adminPortal();
 void loginFiction();
 void registerFiction();
 grade* creatLinklist();
+grade* record(grade* head);
 
 int main()
 {
@@ -184,11 +185,12 @@ grade* creatLinklist()
 	else {
 		char tid[15];
 		float chinese, math, english, total, average;
-		while (fscanf(p, "%13s %.2f %.2f %.2f %.2f %.2f", tid, &chinese,&english,&math,&total,&average) != EOF) {
+		while (fscanf(p, "%13s %f %f %f %f %f", tid, &chinese,&english,&math,&total,&average) != EOF) {
 			grade* cur = (grade*)malloc(sizeof(grade));
 			if (cur == NULL) {
-				printf("内存分配失败，请重试！");
-				return NULL;
+				printf("内存分配失败，请重试！\n");
+				fclose(p);
+				return head;
 			}
 			strcpy(cur->id,tid);
 			cur->chinesegrade=chinese;
@@ -210,6 +212,54 @@ grade* creatLinklist()
 		fclose(p);
 		return head;
 	}
+}
+
+grade* record(grade* head)
+{
+	char choice;
+	do {
+		grade* tail = head;
+		while (tail != NULL && tail->next != NULL) {
+			tail = tail->next;
+		}
+		char tid[15];
+		float chinese, math, english, total, average;
+		printf("请输入学生的学号\n");
+		scanf("%s", tid);
+		printf("请输入学生的语文成绩\n");
+		scanf("%f", &chinese);
+		printf("请输入学生的数学成绩\n");
+		scanf("%f", &math);
+		printf("请输入学生的英语成绩\n");
+		scanf("%f", &english);
+		total = chinese + math + english;
+		average = total / 3;
+		grade* cur = (grade*)malloc(sizeof(grade));
+		if (cur == NULL) {
+			printf("内存分配失败，请重试！\n");
+			return head;
+		}
+		strcpy(cur->id, tid);
+		cur->chinesegrade = chinese;
+		cur->englishgrade = english;
+		cur->mathgrade = math;
+		cur->totalgrade = total;
+		cur->averagegrade = average;
+		cur->next = NULL;
+
+		if (head == NULL) {
+			head = cur;
+			tail = cur;
+		}
+		else {
+			tail->next = cur;
+			tail = tail->next;
+		}
+		printf("是否录入下一位学生的成绩（Y/N）\n");
+		while(getchar()!='\n');
+		scanf("%c", &choice);
+	} while (choice == 'Y'|| choice == 'y');
+	return head;
 }
 
 void adminPortal()
