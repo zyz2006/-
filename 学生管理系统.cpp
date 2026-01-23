@@ -10,6 +10,7 @@ typedef struct account {
 
 typedef struct information {
 	char id[10];
+	int clas;
 	float chinesegrade;
 	float englishgrade;
 	float mathgrade;
@@ -26,6 +27,8 @@ void registerFiction();
 void changePassword();
 grade* creatLinklist();
 grade* record(grade* head);
+void seek(grade* head);
+grade* insert(grade* head);
 
 int main()
 {
@@ -110,7 +113,7 @@ void registerFiction()
 	fprintf(p, "%s %s\n", a.username, b.password);
 	fclose(p);
 	printf("注册成功！\n");
-	printf("请登录");
+	printf("请登录\n");
 	loginFiction();
 	return;
 }
@@ -242,8 +245,9 @@ grade* creatLinklist()
 	}
 	else {
 		char tid[15];
+		int clas;
 		float chinese, math, english, total, average;
-		while (fscanf(p, "%13s %f %f %f %f %f", tid, &chinese,&english,&math,&total,&average) != EOF) {
+		while (fscanf(p, "%13s %d %f %f %f %f %f", tid, &clas, &chinese,&english,&math,&total,&average) != EOF) {
 			grade* cur = (grade*)malloc(sizeof(grade));
 			if (cur == NULL) {
 				printf("内存分配失败，请重试！\n");
@@ -251,6 +255,7 @@ grade* creatLinklist()
 				return head;
 			}
 			strcpy(cur->id,tid);
+			cur->clas = clas;
 			cur->chinesegrade=chinese;
 			cur->englishgrade=english;
 			cur->mathgrade=math;
@@ -281,9 +286,12 @@ grade* record(grade* head)
 			tail = tail->next;
 		}
 		char tid[15];
+		int clas;
 		float chinese, math, english, total, average;
 		printf("请输入学生的学号\n");
 		scanf("%s", tid);
+		printf("请输入学生的班级\n");
+		scanf("%d", &clas);
 		printf("请输入学生的语文成绩\n");
 		scanf("%f", &chinese);
 		printf("请输入学生的数学成绩\n");
@@ -298,6 +306,7 @@ grade* record(grade* head)
 			return head;
 		}
 		strcpy(cur->id, tid);
+		cur->clas=clas
 		cur->chinesegrade = chinese;
 		cur->englishgrade = english;
 		cur->mathgrade = math;
@@ -318,6 +327,93 @@ grade* record(grade* head)
 		scanf("%c", &choice);
 	} while (choice == 'Y'|| choice == 'y');
 	return head;
+}
+
+void seek(grade* head)
+{
+	printf("请输入您要查询学生的学号\n");
+	char tid[15];
+	scanf("%14s", tid);
+	grade* cur = head;
+	int found = 0;
+	while (cur != NULL) {
+		if (strcmp(cur->id, tid) == 0) {
+			found = 1;
+			break;
+		}
+			cur = cur->next;
+	}
+	if (found == 0) {
+		printf("未查询到成绩，请重试！\n");
+	}
+	else {
+		printf("语文成绩：%.2f\n数学成绩：%.2f\n英语成绩：%.2f\n总成绩：%.2f\n平均成绩：%.2f\n", cur->chinesegrade, cur->mathgrade, cur->englishgrade, cur->totalgrade, cur->averagegrade);
+	}
+	return;
+}
+
+grade* insert(grade* head)
+{
+	char tid[15];
+	int clas;
+	float chinese, math, english, total, average;
+	printf("请输入学生的学号\n");
+	scanf("%14s", tid);
+	printf("请输入学生的班级\n");
+	scanf("%d", &clas);
+	printf("请输入学生的语文成绩\n");
+	scanf("%f", &chinese);
+	printf("请输入学生的数学成绩\n");
+	scanf("%f", &math);
+	printf("请输入学生的英语成绩\n");
+	scanf("%f", &english);
+	total = chinese + math + english;
+	average = total / 3;
+	grade* cur = (grade*)malloc(sizeof(grade));
+	if (cur == NULL) {
+		printf("内存分配失败，请重试！\n");
+		return head;
+	}
+	strcpy(cur->id, tid);
+	cur->clas = clas;
+	cur->chinesegrade = chinese;
+	cur->englishgrade = english;
+	cur->mathgrade = math;
+	cur->totalgrade = total;
+	cur->averagegrade = average;
+	cur->next = NULL;
+	if (head == NULL) {
+		printf("还未录入学生成绩，已将此同学成绩作为第一位\n");
+		return cur;
+	}
+	printf("请输入您要插入位置的前一位同学的学号！(若插入第一个位置，请输入0)\n");
+	char preid[15];
+	scanf("%14s", preid);
+	if (strcmp(preid ,"0")==0) {
+		cur->next = head;
+		head = cur;
+		return head;
+	}
+	else {
+		grade* temp = head;
+		int found = 0;
+		while (temp != NULL) {
+			if (strcmp(temp->id, preid) == 0) {
+				found = 1;
+				break;
+			}
+			temp = temp->next;
+		}
+		if (found == 1) {
+			cur->next = temp->next;
+			temp->next = cur;
+		}
+		else {
+			printf("未找到您指定的插入位置\n");
+			free(cur);
+		}
+		return head;
+	}
 }
 
 void adminPortal()
