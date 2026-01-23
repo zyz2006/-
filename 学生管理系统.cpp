@@ -23,6 +23,7 @@ void studentPortal();
 void adminPortal();
 void loginFiction();
 void registerFiction();
+void changePassword();
 grade* creatLinklist();
 grade* record(grade* head);
 
@@ -114,6 +115,60 @@ void registerFiction()
 	return;
 }
 
+void changePassword()
+{
+	account login,exist;
+	int userFound = 0;
+	printf("请输入用户名。\n");
+	scanf("%49s", login.username);
+	FILE* p = fopen("账户.txt", "r");
+	if (p == NULL) {
+		printf("文件打开失败，请排除错误后重试！\n");
+		return;
+	}
+	FILE* temp = fopen("临时文件.txt", "w");
+		if (temp == NULL) {
+			printf("临时文件创建失败！\n");
+			fclose(p);
+			return;
+		}
+		while (fscanf(p, "%s %s", exist.username, exist.password) != EOF) {
+			if (strcmp(exist.username, login.username) == 0) {
+				userFound = 1;
+				printf("请输入新密码！\n");
+				scanf("%49s", login.password);
+				while (strlen(login.password) > 20 || strlen(login.password) < 8) {
+					if (strlen(login.password) > 20) {
+						printf("密码过长！\n");
+					}
+					if (strlen(login.password) < 8) {
+						printf("密码过短！\n");
+					}
+					printf("请设置8到20位的密码\n");
+					scanf("%49s", login.password);
+				}
+				account b;
+				for (int i = 0; i < strlen(login.password); i++) {
+					b.password[i] = login.password[i] + 5;
+				}
+				b.password[strlen(login.password)] = '\0';
+				strcpy(exist.password, b.password);
+			}
+			fprintf(temp, "%s %s\n", exist.username, exist.password);
+		}
+	fclose(p);
+	fclose(temp);
+	if (userFound == 0) {
+		printf("用户名不存在！请先注册\n");
+	}
+	else {
+		remove("账户.txt");
+		rename("临时文件.txt", "账户.txt");
+		printf("密码修改成功\n");
+	}
+	return;
+}
+
 void loginFiction()
 {
 	account login;
@@ -146,12 +201,15 @@ void loginFiction()
 			else {
 				do {
 					printf("密码错误！\n");
-					printf("请重新输入密码！\n");
+					printf("请重新输入密码！(输入q重新设置密码）\n");
 					scanf("%49s", login.password);
 					if (strcmp(tempPassword, login.password) == 0) {
 						printf("登陆成功！\n");
 						fclose(che);
 						return;
+					}
+					else if (login.password == "q") {
+						changePassword();
 					}
 				} while (strcmp(tempPassword, login.password) != 0);
 			
@@ -159,7 +217,7 @@ void loginFiction()
 		}		
 	}
 	if (userFound == 0) {
-		printf("用户名不存在！\n");
+		printf("用户名不存在！请先注册\n");
 		return;
 	}
 	
