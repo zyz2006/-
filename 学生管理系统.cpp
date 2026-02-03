@@ -22,12 +22,12 @@ typedef struct information {
 	struct information* next;
 }grade;
 
-void teacherPortal(grade* gradeHead, account* accountHead);
+void teacherPortal(grade** gradeHead, account* accountHead);
 void studentPortal(grade* gradeHead, account* accountHead);
-void adminPortal(grade* gradeHead, account* accountHead);
-void prelogin(grade* gradeHead, account* accountHead);
+void adminPortal(grade** gradeHead, account* accountHead);
+account* prelogin(grade* gradeHead, account* accountHead);
 account* registerFiction(account* accountHead);
-void loginFiction(account* accountHead);
+account* loginFiction(account* accountHead);
 account* creatAccountLinklist();
 account* changePassword(account* accountHead);
 void seekAccount(account* accountHead);
@@ -52,62 +52,76 @@ int main()
 {
 	grade* gradeHead= creatGradeLinklist();
 	account* accountHead= creatAccountLinklist();
-	char r, tch;
+	for (int i = 0; i < 30; i++) {
+		printf("=");
+	}
+	printf("\n");
+	char r, tch='N';
 	do {
-		prelogin(gradeHead, accountHead);
+		accountHead = prelogin(gradeHead, accountHead);
 		printf("请问您的身份是：\n（A）老师\n（B）学生\n（C）管理员\n");
 		printf("请选择‘A'，'B'，'C'\n");
 		while (scanf("%c", &r) != EOF) {
 			while (getchar() != '\n');
-			if (r == 'A') {
+			if (r == 'A'||r=='a') {
 				printf("现在进入教师端\n");
-				teacherPortal(gradeHead, accountHead);
+				teacherPortal(&gradeHead, accountHead);
 				break;
 			}
-			else if (r == 'B') {
-				studentPortal(gradeHead, accountHead);
+			else if (r == 'B'||r=='b') {
 				printf("现在进入学生端\n");
+				studentPortal(gradeHead, accountHead);
 				break;
 			}
-			else if (r == 'C') {
-				adminPortal(gradeHead, accountHead);
+			else if (r == 'C'||r=='c') {
 				printf("现在进入管理员端\n");
+				adminPortal(&gradeHead, accountHead);
 				break;
 			}
 			else {
-				printf("身份有误，请重新选择！");
+				printf("身份有误，请重新选择！\n");
 			}
-			printf("是否更换账号进行其他操作(Y/N)\n");
-			scanf("%c", &tch);
 		}
+		printf("是否更换账号进行其他操作(除了Y与y其他均视为不进行其他操作)\n");
+		scanf("%c", &tch);
+		while (getchar() != '\n');
 	} while (tch == 'Y' || tch == 'y');
 	gradeFile(gradeHead);
 	accountFile(accountHead);
+	return 0;
 }
 
 //判断是否有账户
-void prelogin(grade* gradeHead, account* accountHead)
+account* prelogin(grade* gradeHead, account* accountHead)
 {
 	printf("您是否有账户？\n");
 	printf("Y代表有，N代表没有，请输入：\n");
 	char temp;
 	while (scanf("%c", &temp) != EOF) {
 		while (getchar() != '\n');
-		if (temp == 'Y') {
+		if (temp == 'Y'||temp=='y') {
 			printf("请登录\n");
-			loginFiction(accountHead);
+			for (int i = 0; i < 30; i++) {
+				printf("=");
+			}
+			printf("\n");
+			accountHead=loginFiction(accountHead);
 			break;
 		}
-		else if (temp == 'N') {
-			printf("请先注册在登陆\n");
-			registerFiction(accountHead);
+		else if (temp == 'N'||temp=='n') {
+			printf("请先注册再登陆\n");
+			for (int i = 0; i < 30; i++) {
+				printf("=");
+			}
+			printf("\n");
+			accountHead=registerFiction(accountHead);
 			break;
 		}
 		else {
 			printf("输入有误，请重新输入！\n");
 		}
 	}
-	return;
+	return accountHead;
 }
 
 //注册
@@ -121,10 +135,13 @@ account* registerFiction(account* accountHead)
 	account* head = accountHead;
 	printf("请输入小于20位的用户名\n");
 	scanf("%49s", a->username);
+	while (getchar() != '\n');
 	printf("请设置8到20位的密码\n");
 	scanf("%49s", a->password);
+	while (getchar() != '\n');
 	printf("请确认密码\n");
 	scanf("%49s", a->cpassword);
+	while (getchar() != '\n');
 	while (strlen(a->username) >= 20 || strlen(a->password) > 20 || strlen(a->password) < 8 || strcmp(a->password, a->cpassword) != 0) {
 		if (strlen(a->username) >= 20) {
 			printf("用户名过长！\n");
@@ -148,10 +165,13 @@ account* registerFiction(account* accountHead)
 		}
 		printf("请输入小于20位的用户名\n");
 		scanf("%49s", a->username);
+		while (getchar() != '\n');
 		printf("请设置8到20位的密码\n");
 		scanf("%49s", a->password);
+		while (getchar() != '\n');
 		printf("请确认密码\n");
 		scanf("%49s", a->cpassword);
+		while (getchar() != '\n');
 	}
 	account* b = (account*)malloc(sizeof(account));
 	if (b == NULL) {
@@ -167,31 +187,36 @@ account* registerFiction(account* accountHead)
 	if (head == NULL) {
 		head = b;
 	}
-	else if (head->next == NULL) {
-		head->next = b;
-	}
 	else {
-		while (head->next != NULL) {
-			head = head->next;
+		account* p = head;
+		while (p->next != NULL) {
+			p = p->next;
 		}
-		head->next = b;
+		p->next = b;
 	}
 	b->next = NULL;
 	printf("注册成功！\n");
 	printf("请登录\n");
+	for (int i = 0; i < 30; i++) {
+		printf("=");
+	}
+	printf("\n");
+	accountHead = loginFiction(head);
 	free(a);
-	return head;
+	return accountHead;
 }
 
 //登录
-void loginFiction(account* accountHead)
+account* loginFiction(account* accountHead)
 {
 	account* login = (account*)malloc(sizeof(account));
 	account* exist = accountHead;
 	printf("请输入用户名。\n");
 	scanf("%49s", login->username);
+	while (getchar() != '\n');
 	printf("请输入密码。\n");
 	scanf("%49s", login->password);
+	while (getchar() != '\n');
 	//比对用户名和密码
 	int userFound = 0;
 	while (exist != NULL) {
@@ -204,28 +229,48 @@ void loginFiction(account* accountHead)
 			userFound = 1;
 			if (strcmp(tempPassword, login->password) == 0) {
 				printf("登陆成功！\n");
-				return;
+				free(login);
+				return accountHead;
 			}
 			else {
 				do {
 					printf("密码错误！\n");
 					printf("请重新输入密码！(输入q重新设置密码）\n");
 					scanf("%49s", login->password);
+					while (getchar() != '\n');
 					if (strcmp(tempPassword, login->password) == 0) {
 						printf("登陆成功！\n");
-						return;
+						for (int i = 0; i < 30; i++) {
+							printf("=");
+						}
+						printf("\n");
+						free(login);
+						return accountHead;
 					}
 					else if (strcmp(login->password, "q") == 0) {
-						changePassword(accountHead);
+						for (int i = 0; i < 30; i++) {
+							printf("=");
+						}
+						printf("\n");
+						free(login);
+						accountHead=changePassword(accountHead);
+						return accountHead;
 					}
 				} while (strcmp(tempPassword, login->password) != 0);
 
 			}
 		}
+		exist = exist->next;
 	}
 	if (userFound == 0) {
 		printf("用户名不存在！请先注册\n");
-		return;
+		for (int i = 0; i < 30; i++) {
+			printf("=");
+		}
+		printf("\n");
+		free(login);
+		accountHead=registerFiction(accountHead);
+		return accountHead;
 	}
 }
 //录入原始账户数据
@@ -241,15 +286,7 @@ account* creatAccountLinklist()
 		}
 		else {
 			fclose(p);
-			printf("原始账户数据录入成功\n"); p = fopen("成绩信息.txt", "w");
-			if (p == NULL) {
-				printf("文件创建失败，请排除故障后重试！\n");
-				return NULL;
-			}
-			else {
-				fclose(p);
-				return accountHead;
-			}
+			printf("原始账户数据录入成功\n"); 
 			return accountHead;
 		}
 	}
@@ -290,6 +327,7 @@ account* changePassword(account* accountHead)
 	int userFound = 0;
 	printf("请输入用户名。\n");
 	scanf("%49s", login->username);
+	while (getchar() != '\n');
 	if (exist == NULL) {
 		printf("不存在任何账户！\n");
 		free(login);
@@ -300,6 +338,7 @@ account* changePassword(account* accountHead)
 			userFound = 1;
 			printf("请输入新密码！\n");
 			scanf("%49s", login->password);
+			while (getchar() != '\n');
 			while (strlen(login->password) > 20 || strlen(login->password) < 8) {
 				if (strlen(login->password) > 20) {
 					printf("密码过长！\n");
@@ -309,6 +348,7 @@ account* changePassword(account* accountHead)
 				}
 				printf("请设置8到20位的密码\n");
 				scanf("%49s", login->password);
+				while (getchar() != '\n');
 			}
 			account b = { 0 };
 			for (int i = 0; i < strlen(login->password); i++) {
@@ -321,9 +361,18 @@ account* changePassword(account* accountHead)
 	}
 	if (userFound == 0) {
 		printf("用户名不存在！请先注册\n");
+		for (int i = 0; i < 30; i++) {
+			printf("=");
+		}
+		printf("\n");
+		registerFiction(accountHead);
 	}
 	else {
 		printf("密码修改成功\n");
+		for (int i = 0; i < 30; i++) {
+			printf("=");
+		}
+		printf("\n");
 	}
 	free(login);
 	return accountHead;
@@ -334,6 +383,10 @@ void seekAccount(account* accountHead)
 {
 	if (accountHead == NULL) {
 		printf("暂无任何账户可查找！\n");
+		for (int i = 0; i < 30; i++) {
+			printf("=");
+		}
+		printf("\n");
 		return;
 	}
 	account* head = accountHead;
@@ -341,6 +394,7 @@ void seekAccount(account* accountHead)
 	int found = 0;
 	printf("请输入用户名！\n");
 	scanf("%49s", tus);
+	while (getchar() != '\n');
 	while (head != NULL) {
 		if (strcmp(head->username,tus)==0) {
 			found = 1;
@@ -357,6 +411,11 @@ void seekAccount(account* accountHead)
 	if (found == 0) {
 		printf("用户不存在！\n");
 	}
+	for (int i = 0; i < 30; i++) {
+		printf("=");
+	}
+	printf("\n");
+	return;
 }
 
 //插入账户
@@ -371,19 +430,38 @@ account* insertAccount(account* accountHead)
 	char place[50];
 	printf("请输入账号\n");
 	scanf("%49s", cur->username);
+	while (getchar() != '\n');
+	account* newnode = accountHead;
+	while (newnode != NULL) {
+		if (newnode->username == cur->username) {
+			printf("账户已存在\n");
+			free(cur);
+			return accountHead;
+		}
+	}
 	printf("请输入密码\n");
 	scanf("%49s", cur->password);
+	while (getchar() != '\n');
 	printf("请输入要插入位置的前一位置账号\n");
 	scanf("%49s", place);
+	while (getchar() != '\n');
 	cur->next = NULL;
 	if (accountHead == NULL) {
 		printf("插入成功\n");
+		for (int i = 0; i < 30; i++) {
+			printf("=");
+		}
+		printf("\n");
 		return cur;
 	}
 	if (strcmp(accountHead->username, place) == 0) {
 		cur->next = accountHead;
 		accountHead = cur;
 		printf("插入成功\n");
+		for (int i = 0; i < 30; i++) {
+			printf("=");
+		}
+		printf("\n");
 		return accountHead;
 	}
 	account* head = accountHead;
@@ -401,6 +479,10 @@ account* insertAccount(account* accountHead)
 		printf("未找到插入位置\n");
 		free(cur);
 	}
+	for (int i = 0; i < 30; i++) {
+		printf("=");
+	}
+	printf("\n");
 	return accountHead;
 }
 
@@ -409,6 +491,10 @@ account* deleteAccount(account* accountHead)
 {
 	if (accountHead == NULL) {
 		printf("暂无账户\n");
+		for (int i = 0; i < 30; i++) {
+			printf("=");
+		}
+		printf("\n");
 		return accountHead;
 	}
 	char tus[50];
@@ -419,6 +505,7 @@ account* deleteAccount(account* accountHead)
 		char tch;
 		printf("已找到账户信息，确认删除？(y/n)\n");
 		while (scanf("%c", &tch) != EOF) {
+			while (getchar() != '\n');
 			if (tch == 'Y' || tch == 'y') {
 				account* freeHead = accountHead;
 				accountHead = accountHead->next;
@@ -434,6 +521,10 @@ account* deleteAccount(account* accountHead)
 				printf("输入无效，请重试\n");
 			}
 		}
+		for (int i = 0; i < 30; i++) {
+			printf("=");
+		}
+		printf("\n");
 		return accountHead;
 	}
 	account* head = accountHead;
@@ -445,6 +536,7 @@ account* deleteAccount(account* accountHead)
 			char tch;
 			printf("已找到账户信息，确认删除？(y/n)\n");
 			while (scanf("%c", &tch) != EOF) {
+				while (getchar() != '\n');
 				if (tch == 'Y' || tch == 'y') {
 					account* freeHead = cur;
 					head->next = cur->next;
@@ -467,6 +559,10 @@ account* deleteAccount(account* accountHead)
 	if (found == 0) {
 		printf("未找到账户\n");
 	}
+	for (int i = 0; i < 30; i++) {
+		printf("=");
+	}
+	printf("\n");
 	return accountHead;
 }
 
@@ -484,14 +580,15 @@ grade* creatGradeLinklist()
 		}
 		else {
 			fclose(p);
+			printf("原始成绩信息录入成功\n");
 			return gradeHead;
 		}
 	}
 	else {
 		char tid[15];
-		int clas;
+		int clas,classSort,gradeSort;
 		float chinese, math, english, total, average;
-		while (fscanf(p, "%13s %d %f %f %f %f %f", tid, &clas, &chinese,&english,&math,&total,&average) != EOF) {
+		while (fscanf(p, "%13s %d %d %d %f %f %f %f %f", tid, &clas, &classSort,&gradeSort,&chinese,&english,&math,&total,&average) != EOF) {
 			grade* cur = (grade*)malloc(sizeof(grade));
 			if (cur == NULL) {
 				printf("内存分配失败，请重试！\n");
@@ -500,6 +597,8 @@ grade* creatGradeLinklist()
 			}
 			strcpy(cur->id,tid);
 			cur->clas = clas;
+			cur->classSort = classSort;
+			cur->gradeSort = gradeSort;
 			cur->chinesegrade=chinese;
 			cur->englishgrade=english;
 			cur->mathgrade=math;
@@ -524,25 +623,49 @@ grade* creatGradeLinklist()
 //录入成绩
 grade* recordGrade(grade* gradeHead)
 {
-	char choice;
+	char choice,tt='q';
 	do {
 		grade* tail = gradeHead;
 		while (tail != NULL && tail->next != NULL) {
 			tail = tail->next;
 		}
 		char tid[15];
-		int clas;
+		int clas,found=0;
 		float chinese, math, english, total, average;
 		printf("请输入学生的学号\n");
-		scanf("%s", tid);
+		scanf("%14s", tid);
+		while (getchar() != '\n');
+		grade* cu = gradeHead;
+		while (cu != NULL) {
+			if (strcmp(tid, cu->id) == 0) {
+				printf("该学生成绩已录入\n");
+				found = 1;
+				break;
+			}
+			cu = cu->next;
+		}
+		if (found == 1) {
+			printf("是否录入其他人的成绩？(除了Y与y其他均视为不录入)\n");
+			scanf("%c", &tt);
+			while (getchar() != '\n');
+			for (int i = 0; i < 30; i++) {
+				printf("=");
+			}
+			printf("\n");
+			continue;
+		}
 		printf("请输入学生的班级(1/2)\n");
 		scanf("%d", &clas);
+		while (getchar() != '\n');
 		printf("请输入学生的语文成绩\n");
 		scanf("%f", &chinese);
+		while (getchar() != '\n');
 		printf("请输入学生的数学成绩\n");
 		scanf("%f", &math);
+		while (getchar() != '\n');
 		printf("请输入学生的英语成绩\n");
 		scanf("%f", &english);
+		while (getchar() != '\n');
 		total = chinese + math + english;
 		average = total / 3;
 		grade* cur = (grade*)malloc(sizeof(grade));
@@ -567,9 +690,13 @@ grade* recordGrade(grade* gradeHead)
 			tail->next = cur;
 			tail = tail->next;
 		}
-		printf("是否录入下一位学生的成绩（Y/N）\n");
-		while(getchar()!='\n');
+		printf("是否录入下一位学生的成绩（除了Y与y其他均视为不录入）\n");
 		scanf("%c", &choice);
+		while (getchar() != '\n');
+		for (int i = 0; i < 30; i++) {
+			printf("=");
+		}
+		printf("\n");
 	} while (choice == 'Y'|| choice == 'y');
 	return gradeHead;
 }
@@ -589,34 +716,50 @@ grade* changeGrade (grade* gradeHead)
 			printf("请输入要修改的科目，语文（C）英语（E）数学（M）\n");
 			char tch;
 			while (scanf("%c", &tch) != EOF) {
+				while (getchar() != '\n');
 				if (tch == 'C' || tch == 'c') {
 					printf("请输入新成绩\n");
 					float newgr;
 					scanf("%f", &newgr);
+					while (getchar() != '\n');
 					cur->chinesegrade = newgr;
 					cur->totalgrade = cur->chinesegrade + cur->englishgrade + cur->mathgrade;
 					cur->averagegrade = cur->totalgrade / 3;
 					printf("成绩修改完成\n");
+					for (int i = 0; i < 30; i++) {
+						printf("=");
+					}
+					printf("\n");
 					return gradeHead;
 				}
 				else if (tch == 'E' || tch == 'e') {
 					printf("请输入新成绩\n");
 					float newgr;
 					scanf("%f", &newgr);
+					while (getchar() != '\n');
 					cur->englishgrade = newgr;
 					cur->totalgrade = cur->chinesegrade + cur->englishgrade + cur->mathgrade;
 					cur->averagegrade = cur->totalgrade / 3;
 					printf("成绩修改完成\n");
+					for (int i = 0; i < 30; i++) {
+						printf("=");
+					}
+					printf("\n");
 					return gradeHead;
 				}
 				else if (tch == 'M' || tch == 'm') {
 					printf("请输入新成绩\n");
 					float newgr;
 					scanf("%f", &newgr);
+					while (getchar() != '\n');
 					cur->mathgrade = newgr;
 					cur->totalgrade = cur->chinesegrade + cur->englishgrade + cur->mathgrade;
 					cur->averagegrade = cur->totalgrade / 3;
 					printf("成绩修改完成\n");
+					for (int i = 0; i < 30; i++) {
+						printf("=");
+					}
+					printf("\n");
 					return gradeHead;
 				}
 				else {
@@ -628,77 +771,187 @@ grade* changeGrade (grade* gradeHead)
 	}
 	if (found == 0) {
 		printf("未找到对应学生\n");
-		while (getchar() != '\n');
 	}
+	for (int i = 0; i < 30; i++) {
+		printf("=");
+	}
+	printf("\n");
 	return gradeHead;
 }
 
 //查找成绩
 void seekGrade(grade* gradeHead)
 {
-	printf("请输入您要查询学生的学号\n");
-	char tid[15];
-	scanf("%14s", tid);
-	grade* cur = gradeHead;
-	int found = 0;
-	while (cur != NULL) {
-		if (strcmp(cur->id, tid) == 0) {
-			found = 1;
-			break;
-		}
+	char tch;
+	do {
+		printf("请输入您要查询学生的学号\n");
+		char tid[15];
+		scanf("%14s", tid);
+		while (getchar() != '\n');
+		grade* cur = gradeHead;
+		int found = 0;
+		while (cur != NULL) {
+			if (strcmp(cur->id, tid) == 0) {
+				found = 1;
+				break;
+			}
 			cur = cur->next;
-	}
-	if (found == 0) {
-		printf("未查询到成绩，请重试！\n");
-	}
-	else {
-		printf("语文成绩：%.2f\n", cur->chinesegrade);
-		printf("数学成绩：%.2f\n", cur->mathgrade);
-		printf("英语成绩：%.2f\n", cur->englishgrade);
-		printf("总成绩：%.2f\n", cur->totalgrade);
-		printf("平均成绩：%.2f\n", cur->averagegrade);
-	}
+		}
+		if (found == 0) {
+			printf("未查询到成绩，请重试！\n");
+		}
+		else {
+			printf("语文成绩：%.2f\n", cur->chinesegrade);
+			printf("数学成绩：%.2f\n", cur->mathgrade);
+			printf("英语成绩：%.2f\n", cur->englishgrade);
+			printf("总成绩：%.2f\n", cur->totalgrade);
+			printf("平均成绩：%.2f\n", cur->averagegrade);
+			printf("班级排名：%d\n", cur->classSort);
+			printf("年级排名：%d\n", cur->gradeSort);
+		}
+		printf("是否继续查询？(除了Y与y其他均视为不查找)\n");
+		scanf("%c", &tch);
+		while (getchar() != '\n');
+		for (int i = 0; i < 30; i++) {
+			printf("=");
+		}
+		printf("\n");
+	} while (tch == 'y' || tch == 'Y');
 	return;
 }
 
 //查询班级成绩
 void seekClassGrade(grade* gradeHead)
 {
+	char tch;
+	do {
+		printf("请输入您要查询的班级\n");
+		int clas,found=0;
+		scanf("%d", &clas);
+		while (getchar() != '\n');
+		grade* cur = gradeHead;
+		while (cur != NULL) {
+			if (cur->clas == clas) {
+				found = 1;
+				printf("学号:%s\n", cur->id);
+				printf("语文成绩：%.2f\t", cur->chinesegrade);
+				printf("数学成绩：%.2f\t", cur->mathgrade);
+				printf("英语成绩：%.2f\n", cur->englishgrade);
+				printf("总成绩：%.2f\t", cur->totalgrade);
+				printf("平均成绩：%.2f\n", cur->averagegrade);
+				printf("班级排名：%d\t", cur->classSort);
+				printf("年级排名：%d\n", cur->gradeSort);
+			}
+			cur = cur->next;
+		}
+		if (found == 0) {
+			printf("暂无该班级成绩\n");
+		}
+		printf("是否继续查询？(除了Y与y其他均视为不查询)\n");
+		scanf("%c", &tch);
+		while (getchar() != '\n');
+		for (int i = 0; i < 30; i++) {
+			printf("=");
+		}
+		printf("\n");
+	} while (tch == 'y' || tch == 'Y');
 	return;
 }
 
 //成绩申诉
 void gradeAppeal()
 {
+	FILE* p = fopen("申诉.txt", "a");
+	if (p == NULL) {
+		printf("申诉文件创建失败\n");
+		for (int i = 0; i < 30; i++) {
+			printf("=");
+		}
+		printf("\n");
+		return;
+	}
+	char te[100],tch;
+	do {
+		printf("请写清申诉内容，包括,考试名称，学号和问题(90字以内）\n");
+		scanf("%s", te);
+		while (getchar() != '\n');
+		fprintf(p, "%s\n", te);
+		printf("是否还有其它问题？(y/n)\n");
+		scanf("%c", &tch);
+		while (getchar() != '\n');
+	} while (tch == 'y' || tch == 'Y');
+	printf("申诉问题已记录\n");
+	fclose(p);
+	for (int i = 0; i < 30; i++) {
+		printf("=");
+	}
+	printf("\n");
 	return;
 }
 
 //处理申诉
 void dealAppeal()
 {
+	char line[100];
+	FILE* p = fopen("申诉.txt", "r");
+	if (p == NULL) {
+		printf("申诉文件打开失败\n");
+		for (int i = 0; i < 30; i++) {
+			printf("=");
+		}
+		printf("\n");
+		return;
+	}
+	while (fgets(line, sizeof(line), p) != NULL) {
+		line[strcspn(line, "\n")] = '\0';
+		printf("%s\n", line);
+	}
+	printf("申诉问题查看完毕\n");
+	fclose(p);
+	for (int i = 0; i < 30; i++) {
+		printf("=");
+	}
+	printf("\n");
 	return;
 }
 //插入成绩
 grade* insertGrade(grade* gradeHead)
 {
 	char tid[15];
-	int clas;
+	int clas,found=0;
 	float chinese, math, english, total, average;
 	printf("请输入学生的学号\n");
 	scanf("%14s", tid);
+	while (getchar() != '\n');
+	grade* cu = gradeHead;
+	while (cu != NULL) {
+		if (strcmp(tid, cu->id) == 0) {
+			printf("该学生成绩已录入\n");
+			return gradeHead;
+		}
+		cu = cu->next;
+	}
 	printf("请输入学生的班级\n");
 	scanf("%d", &clas);
+	while (getchar() != '\n');
 	printf("请输入学生的语文成绩\n");
 	scanf("%f", &chinese);
+	while (getchar() != '\n');
 	printf("请输入学生的数学成绩\n");
 	scanf("%f", &math);
+	while (getchar() != '\n');
 	printf("请输入学生的英语成绩\n");
 	scanf("%f", &english);
+	while (getchar() != '\n');
 	total = chinese + math + english;
 	average = total / 3;
 	grade* cur = (grade*)malloc(sizeof(grade));
 	if (cur == NULL) {
 		printf("内存分配失败，请重试！\n");
+		for (int i = 0; i < 30; i++) {
+			printf("=");
+		}
+		printf("\n");
 		return gradeHead;
 	}
 	strcpy(cur->id, tid);
@@ -711,15 +964,24 @@ grade* insertGrade(grade* gradeHead)
 	cur->next = NULL;
 	if (gradeHead == NULL) {
 		printf("还未录入学生成绩，已将此同学成绩作为第一位\n");
+		for (int i = 0; i < 30; i++) {
+			printf("=");
+		}
+		printf("\n");
 		return cur;
 	}
 	printf("请输入您要插入位置的前一位同学的学号！(若插入第一个位置，请输入0)\n");
 	char preid[15];
 	scanf("%14s", preid);
+	while (getchar() != '\n');
 	if (strcmp(preid ,"0")==0) {
 		cur->next = gradeHead;
 		gradeHead = cur;
 		printf("插入成功\n");
+		for (int i = 0; i < 30; i++) {
+			printf("=");
+		}
+		printf("\n");
 		return gradeHead;
 	}
 	else {
@@ -851,11 +1113,15 @@ grade* rank(grade* gradeHead)
 {
 	if (gradeHead == NULL) {
 		printf("暂无成绩\n");
+		for (int i = 0; i < 30; i++) {
+			printf("=");
+		}
+		printf("\n");
 		return gradeHead;
 	}
 	int i = 1, j = 1, k = 1;
-	grade* head=descendOrderGrade(gradeHead);
-	grade* cur = head;
+	gradeHead=descendOrderGrade(gradeHead);
+	grade* cur = gradeHead;
 	while (cur != NULL) {
 		cur->gradeSort = k;
 		k++;
@@ -869,7 +1135,11 @@ grade* rank(grade* gradeHead)
 		}
 		cur = cur->next;
 	}
-	return head;
+	for (int i = 0; i < 30; i++) {
+		printf("=");
+	}
+	printf("\n");
+	return gradeHead;
 }
 
 //删除成绩
@@ -877,6 +1147,10 @@ grade* deleteGrade(grade* gradeHead)
 {
 	if (gradeHead == NULL) {
 		printf("还未录入任何成绩\n");
+		for (int i = 0; i < 30; i++) {
+			printf("=");
+		}
+		printf("\n");
 		return gradeHead;
 	}
 	printf("请输入要删除学生的学号\n");
@@ -887,15 +1161,24 @@ grade* deleteGrade(grade* gradeHead)
 		printf("确认删除？（Y/N）\n");
 		char tch;
 		while (scanf("%c", &tch) != EOF) {
+			while (getchar() != '\n');
 			if (tch == 'y' || tch == 'Y') {
 				grade* freeHead = gradeHead;
 				gradeHead = gradeHead->next;
 				printf("删除成功\n");
 				free(freeHead);
+				for (int i = 0; i < 30; i++) {
+					printf("=");
+				}
+				printf("\n");
 				return gradeHead;
 			}
 			else if (tch == 'N' || tch == 'n') {
 				printf("删除已撤销\n");
+				for (int i = 0; i < 30; i++) {
+					printf("=");
+				}
+				printf("\n");
 				return gradeHead;
 			}
 			else {
@@ -913,14 +1196,24 @@ grade* deleteGrade(grade* gradeHead)
 			printf("确认删除？（Y/N）\n");
 			char tch;
 			while (scanf("%c", &tch) != EOF) {
+				while (getchar() != '\n');
 				if (tch == 'y' || tch == 'Y') {
 					head->next = cur->next;
 					printf("删除成功\n");
 					free(cur);
+					for (int i = 0; i < 30; i++) {
+						printf("=");
+					}
+					printf("\n");
+					gradeHead = rank(gradeHead);
 					return gradeHead;
 				}
 				else if (tch == 'N' || tch == 'n') {
 					printf("删除已撤销\n");
+					for (int i = 0; i < 30; i++) {
+						printf("=");
+					}
+					printf("\n");
 					return gradeHead;
 				}
 				else {
@@ -935,30 +1228,34 @@ grade* deleteGrade(grade* gradeHead)
 	if (found == 0) {
 		printf("未找到对应学生\n");
 	}
+	for (int i = 0; i < 30; i++) {
+		printf("=");
+	}
+	printf("\n");
 	return gradeHead;
 }
 
 //管理员端
-void adminPortal(grade* gradeHead,account* accountHead)
+void adminPortal(grade** gradeHead,account* accountHead)
 {
-	printf("请选择您要进行的操作\n");
-	printf("A.修改密码\tB.查找账户\tC.插入账户\tD.删除账户\tE.转入教师端\n");
-	printf("F.处理申诉\n");
 	char tch,tc;
 	do {
+		printf("请选择您要进行的操作\n");
+		printf("A.修改密码\tB.查找账户\tC.插入账户\tD.删除账户\tE.转入教师端\n");
+		printf("F.处理申诉\n");
 		scanf("%c", &tch);
 		while (getchar() != '\n');
 		if (tch == 'A' || tch == 'a') {
-			changePassword(accountHead);
+			accountHead=changePassword(accountHead);
 		}
 		else if (tch == 'B' || tch == 'b') {
 			seekAccount(accountHead);
 		}
 		else if (tch == 'C' || tch == 'c') {
-			insertAccount(accountHead);
+			accountHead = insertAccount(accountHead);
 		}
 		else if (tch == 'D' || tch == 'd') {
-			deleteAccount(accountHead);
+			accountHead = deleteAccount(accountHead);
 		}
 		else if (tch == 'E' || tch == 'e') {
 			teacherPortal(gradeHead, accountHead);
@@ -972,45 +1269,52 @@ void adminPortal(grade* gradeHead,account* accountHead)
 		printf("是否继续操作？(Y/N)\n");
 		scanf("%c", &tc);
 		while (getchar() != '\n');
+		for (int i = 0; i < 30; i++) {
+			printf("=");
+		}
+		printf("\n");
 	} while (tc == 'Y' || tc == 'y');
 	return;
 }
 
-void teacherPortal(grade* gradeHead, account* accountHead)
+void teacherPortal(grade** gradeHead, account* accountHead)
 {
-	printf("请选择您要进行的操作\n");
-	printf("A.录入成绩\tB.修改成绩\tC.插入成绩\tD.删除成绩\n");
-	printf("E.升序排序\tF.降序排序\tG.查找个人成绩\tH.排名\tI.查询班级成绩\n");
 	char tch, tc;
 	do {
+		printf("请选择您要进行的操作\n");
+		printf("A.录入成绩\tB.修改成绩\tC.插入成绩\tD.删除成绩\n");
+		printf("E.升序排序\tF.降序排序\tG.查找个人成绩\tH.排名\tI.查询班级成绩\n");
 		scanf("%c", &tch);
 		while (getchar() != '\n');
 		if (tch == 'A' || tch == 'a') {
-			recordGrade(gradeHead);
+			*gradeHead=recordGrade(*gradeHead);
 		}
 		else if (tch == 'B' || tch == 'b') {
-			changeGrade(gradeHead);
+			*gradeHead = changeGrade(*gradeHead);
+			*gradeHead = rank(*gradeHead);
 		}
 		else if (tch == 'C' || tch == 'c') {
-			insertGrade(gradeHead);
+			*gradeHead = insertGrade(*gradeHead);
+			*gradeHead = rank(*gradeHead);
 		}
 		else if (tch == 'D' || tch == 'd') {
-			deleteGrade(gradeHead);
+			*gradeHead = deleteGrade(*gradeHead);
+			*gradeHead = rank(*gradeHead);
 		}
 		else if (tch == 'E' || tch == 'e') {
-			ascendOrderGrade(gradeHead);
+			*gradeHead = ascendOrderGrade(*gradeHead);
 		}
 		else if (tch == 'F' || tch == 'f') {
-			descendOrderGrade(gradeHead);
+			*gradeHead = descendOrderGrade(*gradeHead);
 		}
 		else if (tch == 'G' || tch == 'g') {
-			seekGrade(gradeHead);
+			seekGrade(*gradeHead);
 		}
 		else if (tch == 'H' || tch == 'h') {
-			rank(gradeHead);
+			*gradeHead = rank(*gradeHead);
 		}
 		else if (tch == 'I' || tch == 'i') {
-			seekClassGrade(gradeHead);
+			seekClassGrade(*gradeHead);
 		}
 		else {
 			printf("输入无效\n");
@@ -1018,23 +1322,27 @@ void teacherPortal(grade* gradeHead, account* accountHead)
 		printf("是否继续操作？(Y/N)\n");
 		scanf("%c", &tc);
 		while (getchar() != '\n');
+		for (int i = 0; i < 30; i++) {
+			printf("=");
+		}
+		printf("\n");
 	} while (tc == 'Y' || tc == 'y');
 	return;
 }
 
 void studentPortal(grade* gradeHead, account* accountHead)
 {
-	printf("请选择您要进行的操作\n");
-	printf("A.查询个人成绩\tB.查询班级成绩\tC.成绩申诉\n");
 	char tch, tc;
 	do {
+		printf("请选择您要进行的操作\n");
+		printf("A.查询个人成绩\tB.查询班级成绩\tC.成绩申诉\n");
 		scanf("%c", &tch);
 		while (getchar() != '\n');
 		if (tch == 'A' || tch == 'a') {
 			seekGrade(gradeHead);
 		}
 		else if (tch == 'B' || tch == 'b') {
-			seekClassGrade(gradeHead);
+			seekClassGrade(gradeHead);			
 		}
 		else if (tch == 'C' || tch == 'c') {
 			gradeAppeal();
@@ -1045,6 +1353,10 @@ void studentPortal(grade* gradeHead, account* accountHead)
 		printf("是否继续操作？(Y/N)\n");
 		scanf("%c", &tc);
 		while (getchar() != '\n');
+		for (int i = 0; i < 30; i++) {
+			printf("=");
+		}
+		printf("\n");
 	} while (tc == 'Y' || tc == 'y');
 	return;
 }
@@ -1078,7 +1390,7 @@ grade* gradeFile(grade* gradeHead)
 //账户导入文件
 account* accountFile(account* accountHead)
 {
-	FILE* p = fopen("账户信息.txt", "w");
+	FILE* p = fopen("账户.txt", "w");
 	if (p == NULL) {
 		printf("文件打开失败\n");
 		return accountHead;
