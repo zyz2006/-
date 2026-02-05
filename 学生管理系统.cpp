@@ -38,8 +38,8 @@ grade* recordGrade(grade* gradeHead);
 grade* changeGrade(grade* gradeHead);
 void seekGrade(grade* gradeHead);
 void seekClassGrade(grade* gradeHead);
-void gradeAppeal();
-void dealAppeal();
+void gatherProblem();
+void checkProblem();
 grade* insertGrade(grade* gradeHead);
 grade* ascendOrderGrade(grade* gradeHead);
 grade* descendOrderGrade(grade* gradeHead);
@@ -58,7 +58,6 @@ int main()
 	printf("\n");
 	char r, tch = 'N';
 	do {
-		accountHead = prelogin(gradeHead, accountHead);
 		printf("请问您的身份是：\n（A）老师\n（B）学生\n（C）管理员\n");
 		printf("请选择‘A'，'B'，'C'\n");
 		while (scanf("%c", &r) != EOF) {
@@ -858,12 +857,12 @@ void seekClassGrade(grade* gradeHead)
 	return;
 }
 
-//成绩申诉
-void gradeAppeal()
+//问题收集
+void gatherProblem()
 {
-	FILE* p = fopen("申诉.txt", "a");
+	FILE* p = fopen("代办.txt", "a");
 	if (p == NULL) {
-		printf("申诉文件创建失败\n");
+		printf("代办文件创建失败\n");
 		for (int i = 0; i < 30; i++) {
 			printf("=");
 		}
@@ -872,7 +871,7 @@ void gradeAppeal()
 	}
 	char te[100], tch;
 	do {
-		printf("请写清申诉内容，包括,考试名称，学号和问题(90字以内）\n");
+		printf("请写清问题内容(90字以内）\n");
 		scanf("%s", te);
 		while (getchar() != '\n');
 		fprintf(p, "%s\n", te);
@@ -889,13 +888,13 @@ void gradeAppeal()
 	return;
 }
 
-//处理申诉
-void dealAppeal()
+//查看问题
+void checkProblem()
 {
 	char line[100];
-	FILE* p = fopen("申诉.txt", "r");
+	FILE* p = fopen("代办.txt", "r");
 	if (p == NULL) {
-		printf("申诉文件打开失败\n");
+		printf("代办文件打开失败\n");
 		for (int i = 0; i < 30; i++) {
 			printf("=");
 		}
@@ -906,7 +905,7 @@ void dealAppeal()
 		line[strcspn(line, "\n")] = '\0';
 		printf("%s\n", line);
 	}
-	printf("申诉问题查看完毕\n");
+	printf("代办问题查看完毕\n");
 	fclose(p);
 	for (int i = 0; i < 30; i++) {
 		printf("=");
@@ -1238,11 +1237,12 @@ grade* deleteGrade(grade* gradeHead)
 //管理员端
 void adminPortal(grade** gradeHead, account* accountHead)
 {
+	accountHead = prelogin(*gradeHead, accountHead);
 	char tch, tc;
 	do {
 		printf("请选择您要进行的操作\n");
 		printf("A.修改密码\tB.查找账户\tC.插入账户\tD.删除账户\tE.转入教师端\n");
-		printf("F.处理申诉\n");
+		printf("F.处理代办\n");
 		scanf("%c", &tch);
 		while (getchar() != '\n');
 		if (tch == 'A' || tch == 'a') {
@@ -1261,7 +1261,7 @@ void adminPortal(grade** gradeHead, account* accountHead)
 			teacherPortal(gradeHead, accountHead);
 		}
 		else if (tch == 'F' || tch == 'f') {
-			dealAppeal();
+			checkProblem();
 		}
 		else {
 			printf("输入无效\n");
@@ -1282,8 +1282,9 @@ void teacherPortal(grade** gradeHead, account* accountHead)
 	char tch, tc;
 	do {
 		printf("请选择您要进行的操作\n");
-		printf("A.录入成绩\tB.修改成绩\tC.插入成绩\tD.删除成绩\n");
-		printf("E.升序排序\tF.降序排序\tG.查找个人成绩\tH.排名\tI.查询班级成绩\n");
+		printf("A.录入成绩\tB.修改成绩\tC.插入成绩\tD.删除成绩\tE.升序排序\n");
+		printf("F.降序排序\tG.查找个人成绩\tH.排名\tI.查询班级成绩J.账号申诉\n");
+		printf("账号申诉可向管理员申请，由管理员帮助查询密码\n");
 		scanf("%c", &tch);
 		while (getchar() != '\n');
 		if (tch == 'A' || tch == 'a') {
@@ -1316,6 +1317,9 @@ void teacherPortal(grade** gradeHead, account* accountHead)
 		else if (tch == 'I' || tch == 'i') {
 			seekClassGrade(*gradeHead);
 		}
+		else if (tch == 'J' || tch == 'j') {
+			gatherProblem();
+		}
 		else {
 			printf("输入无效\n");
 		}
@@ -1335,7 +1339,8 @@ void studentPortal(grade* gradeHead, account* accountHead)
 	char tch, tc;
 	do {
 		printf("请选择您要进行的操作\n");
-		printf("A.查询个人成绩\tB.查询班级成绩\tC.成绩申诉\n");
+		printf("A.查询个人成绩\tB.查询班级成绩\tC.成绩申诉(也可进行账号申诉)\n");
+		printf("账号申诉可向管理员申请，由管理员帮助查询密码\n");
 		scanf("%c", &tch);
 		while (getchar() != '\n');
 		if (tch == 'A' || tch == 'a') {
@@ -1345,7 +1350,7 @@ void studentPortal(grade* gradeHead, account* accountHead)
 			seekClassGrade(gradeHead);
 		}
 		else if (tch == 'C' || tch == 'c') {
-			gradeAppeal();
+			gatherProblem();
 		}
 		else {
 			printf("输入无效\n");
