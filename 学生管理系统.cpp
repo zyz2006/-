@@ -1279,6 +1279,7 @@ void adminPortal(grade** gradeHead, account* accountHead)
 
 void teacherPortal(grade** gradeHead, account* accountHead)
 {
+	accountHead = prelogin(*gradeHead, accountHead);
 	char tch, tc;
 	do {
 		printf("请选择您要进行的操作\n");
@@ -1336,6 +1337,7 @@ void teacherPortal(grade** gradeHead, account* accountHead)
 
 void studentPortal(grade* gradeHead, account* accountHead)
 {
+	accountHead = prelogin(gradeHead, accountHead);
 	char tch, tc;
 	do {
 		printf("请选择您要进行的操作\n");
