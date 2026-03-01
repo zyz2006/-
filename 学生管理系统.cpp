@@ -142,16 +142,15 @@ account* registerFiction(account** accountHead)
 	printf("请确认密码\n");
 	scanf("%49s", a->cpassword);
 	while (getchar() != '\n');
-	
 	while (strlen(a->username) >= 20 || strlen(a->password) > 20 || strlen(a->password) < 8 || strcmp(a->password, a->cpassword) != 0) {
 		if (strlen(a->username) >= 20) {
-			printf("密码过长！\n");
+			printf("用户名过长！\n");
 		}
 		if (strlen(a->password) < 8) {
 			printf("密码过短！\n");
-			printf("用户名过长！\n");
 		}
 		if (strlen(a->password) > 20) {
+			printf("密码过长\n");
 		}
 		if (strcmp(a->password, a->cpassword) != 0) {
 			printf("确认密码与输入密码不一致！\n");
@@ -281,8 +280,8 @@ account* loginFiction(account** accountHead)
 			printf("=");
 		}
 		printf("\n");
-		free(login);
 		*accountHead = registerFiction(accountHead);
+		free(login);
 		return *accountHead;
 	}
 }
@@ -446,11 +445,12 @@ account* insertAccount(account** accountHead)
 	while (getchar() != '\n');
 	account* newnode = *accountHead;
 	while (newnode != NULL) {
-		if (newnode->username == cur->username) {
+		if (strcmp(newnode->username , cur->username)==0) {
 			printf("账户已存在\n");
 			free(cur);
 			return *accountHead;
 		}
+		newnode = newnode->next;
 	}
 	printf("请输入密码\n");
 	scanf("%49s", cur->password);
@@ -517,7 +517,8 @@ account* deleteAccount(account** accountHead)
 	if (strcmp(tus, (*accountHead)->username) == 0) {
 		char tch;
 		printf("已找到账户信息，确认删除？(y/n)\n");
-		while (scanf("%c", &tch) != EOF) {
+		do{
+			scanf(" %c", &tch);
 			while (getchar() != '\n');
 			if (tch == 'Y' || tch == 'y') {
 				account* freeHead = *accountHead;
@@ -533,7 +534,7 @@ account* deleteAccount(account** accountHead)
 			else {
 				printf("输入无效，请重试\n");
 			}
-		}
+		} while (1);
 		for (int i = 0; i < 30; i++) {
 			printf("=");
 		}
@@ -1150,6 +1151,7 @@ grade* rank(grade* gradeHead)
 		}
 		cur = cur->next;
 	}
+	printf("排名完成\n");
 	for (int i = 0; i < 30; i++) {
 		printf("=");
 	}
