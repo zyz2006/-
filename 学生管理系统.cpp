@@ -22,17 +22,17 @@ typedef struct information {
 	struct information* next;
 }grade;
 
-void teacherPortal(grade** gradeHead, account* accountHead);
-void studentPortal(grade* gradeHead, account* accountHead);
-void adminPortal(grade** gradeHead, account* accountHead);
-account* prelogin(grade* gradeHead, account* accountHead);
-account* registerFiction(account* accountHead);
-account* loginFiction(account* accountHead);
+void teacherPortal(grade** gradeHead, account** accountHead);
+void studentPortal(grade* gradeHead, account** accountHead);
+void adminPortal(grade** gradeHead, account** accountHead);
+account* prelogin(grade* gradeHead, account** accountHead);
+account* registerFiction(account** accountHead);
+account* loginFiction(account** accountHead);
 account* creatAccountLinklist();
-account* changePassword(account* accountHead);
-void seekAccount(account* accountHead);
-account* insertAccount(account* accountHead);
-account* deleteAccount(account* accountHead);
+account* changePassword(account** accountHead);
+void seekAccount(account** accountHead);
+account* insertAccount(account** accountHead);
+account* deleteAccount(account** accountHead);
 grade* creatGradeLinklist();
 grade* recordGrade(grade* gradeHead);
 grade* changeGrade(grade* gradeHead);
@@ -64,17 +64,17 @@ int main()
 			while (getchar() != '\n');
 			if (r == 'A' || r == 'a') {
 				printf("现在进入教师端\n");
-				teacherPortal(&gradeHead, accountHead);
+				teacherPortal(&gradeHead,&accountHead);
 				break;
 			}
 			else if (r == 'B' || r == 'b') {
 				printf("现在进入学生端\n");
-				studentPortal(gradeHead, accountHead);
+				studentPortal(gradeHead, &accountHead);
 				break;
 			}
 			else if (r == 'C' || r == 'c') {
 				printf("现在进入管理员端\n");
-				adminPortal(&gradeHead, accountHead);
+				adminPortal(&gradeHead, &accountHead);
 				break;
 			}
 			else {
@@ -91,7 +91,7 @@ int main()
 }
 
 //判断是否有账户
-account* prelogin(grade* gradeHead, account* accountHead)
+account* prelogin(grade* gradeHead, account** accountHead)
 {
 	printf("您是否有账户？\n");
 	printf("Y代表有，N代表没有，请输入：\n");
@@ -104,7 +104,7 @@ account* prelogin(grade* gradeHead, account* accountHead)
 				printf("=");
 			}
 			printf("\n");
-			accountHead = loginFiction(accountHead);
+			*accountHead = loginFiction(accountHead);
 			break;
 		}
 		else if (temp == 'N' || temp == 'n') {
@@ -113,25 +113,26 @@ account* prelogin(grade* gradeHead, account* accountHead)
 				printf("=");
 			}
 			printf("\n");
-			accountHead = registerFiction(accountHead);
+			*accountHead = registerFiction(accountHead);
 			break;
 		}
 		else {
 			printf("输入有误，请重新输入！\n");
 		}
 	}
-	return accountHead;
+	return *accountHead;
 }
 
 //注册
-account* registerFiction(account* accountHead)
+account* registerFiction(account** accountHead)
 {
 	account* a = (account*)malloc(sizeof(account));
 	if (a == NULL) {
 		printf("内存分配失败，请重试！\n");
-		return accountHead;
+		return *accountHead;
 	}
-	account* head = accountHead;
+	memset(a, 0, sizeof(account));
+	//account* head = accountHead;
 	printf("请输入小于20位的用户名\n");
 	scanf("%49s", a->username);
 	while (getchar() != '\n');
@@ -141,23 +142,16 @@ account* registerFiction(account* accountHead)
 	printf("请确认密码\n");
 	scanf("%49s", a->cpassword);
 	while (getchar() != '\n');
+	
 	while (strlen(a->username) >= 20 || strlen(a->password) > 20 || strlen(a->password) < 8 || strcmp(a->password, a->cpassword) != 0) {
 		if (strlen(a->username) >= 20) {
-			printf("用户名过长！\n");
-		}
-		account* hea = accountHead;
-		while (hea != NULL) {
-			if (strcmp(hea->username, a->username) == 0) {
-				printf("用户名已存在\n");
-				break;
-			}
-			hea = hea->next;
-		}
-		if (strlen(a->password) > 20) {
 			printf("密码过长！\n");
 		}
 		if (strlen(a->password) < 8) {
 			printf("密码过短！\n");
+			printf("用户名过长！\n");
+		}
+		if (strlen(a->password) > 20) {
 		}
 		if (strcmp(a->password, a->cpassword) != 0) {
 			printf("确认密码与输入密码不一致！\n");
@@ -172,22 +166,32 @@ account* registerFiction(account* accountHead)
 		scanf("%49s", a->cpassword);
 		while (getchar() != '\n');
 	}
+	account* hea = *accountHead;
+	while (hea != NULL) {
+		if (strcmp(hea->username, a->username) == 0) {
+			printf("用户名已存在\n");
+			free(a);
+			return *accountHead;
+		}
+		hea = hea->next;
+	}
 	account* b = (account*)malloc(sizeof(account));
 	if (b == NULL) {
 		printf("内存分配失败，请重试！\n");
 		free(a);
-		return accountHead;
+		return *accountHead;
 	}
+	memset(b, 0, sizeof(account));
 	for (int i = 0; i < strlen(a->password); i++) {
 		b->password[i] = a->password[i] + 5;
 	}
 	b->password[strlen(a->password)] = '\0';
 	strcpy(b->username, a->username);
-	if (head == NULL) {
-		head = b;
+	if (*accountHead == NULL) {
+		*accountHead = b;
 	}
 	else {
-		account* p = head;
+		account* p = *accountHead;
 		while (p->next != NULL) {
 			p = p->next;
 		}
@@ -195,27 +199,37 @@ account* registerFiction(account* accountHead)
 	}
 	b->next = NULL;
 	printf("注册成功！\n");
+	/*account* test = accountHead;
+	printf("当前链表中的用户：");
+	while (test != NULL) {
+		printf("%s ", test->username);
+		test = test->next;
+	}
+	printf("\n");
+	*/
 	printf("请登录\n");
 	for (int i = 0; i < 30; i++) {
 		printf("=");
 	}
 	printf("\n");
-	accountHead = loginFiction(head);
+	*accountHead = loginFiction(accountHead);
 	free(a);
-	return accountHead;
+	return *accountHead;
 }
 
 //登录
-account* loginFiction(account* accountHead)
+account* loginFiction(account** accountHead)
 {
 	account* login = (account*)malloc(sizeof(account));
-	account* exist = accountHead;
+	memset(login, 0, sizeof(account));
+	account* exist = *accountHead;
 	printf("请输入用户名。\n");
 	scanf("%49s", login->username);
 	while (getchar() != '\n');
 	printf("请输入密码。\n");
 	scanf("%49s", login->password);
 	while (getchar() != '\n');
+	
 	//比对用户名和密码
 	int userFound = 0;
 	while (exist != NULL) {
@@ -229,7 +243,7 @@ account* loginFiction(account* accountHead)
 			if (strcmp(tempPassword, login->password) == 0) {
 				printf("登陆成功！\n");
 				free(login);
-				return accountHead;
+				return *accountHead;
 			}
 			else {
 				do {
@@ -244,7 +258,7 @@ account* loginFiction(account* accountHead)
 						}
 						printf("\n");
 						free(login);
-						return accountHead;
+						return *accountHead;
 					}
 					else if (strcmp(login->password, "q") == 0) {
 						for (int i = 0; i < 30; i++) {
@@ -252,8 +266,8 @@ account* loginFiction(account* accountHead)
 						}
 						printf("\n");
 						free(login);
-						accountHead = changePassword(accountHead);
-						return accountHead;
+						*accountHead = changePassword(accountHead);
+						return *accountHead;
 					}
 				} while (strcmp(tempPassword, login->password) != 0);
 
@@ -268,8 +282,8 @@ account* loginFiction(account* accountHead)
 		}
 		printf("\n");
 		free(login);
-		accountHead = registerFiction(accountHead);
-		return accountHead;
+		*accountHead = registerFiction(accountHead);
+		return *accountHead;
 	}
 }
 //录入原始账户数据
@@ -319,10 +333,10 @@ account* creatAccountLinklist()
 }
 
 //修改密码
-account* changePassword(account* accountHead)
+account* changePassword(account** accountHead)
 {
 	account* login = (account*)malloc(sizeof(account));
-	account* exist = accountHead;
+	account* exist = *accountHead;
 	int userFound = 0;
 	printf("请输入用户名。\n");
 	scanf("%49s", login->username);
@@ -374,13 +388,13 @@ account* changePassword(account* accountHead)
 		printf("\n");
 	}
 	free(login);
-	return accountHead;
+	return *accountHead;
 }
 
 //查找账户
-void seekAccount(account* accountHead)
+void seekAccount(account** accountHead)
 {
-	if (accountHead == NULL) {
+	if (*accountHead == NULL) {
 		printf("暂无任何账户可查找！\n");
 		for (int i = 0; i < 30; i++) {
 			printf("=");
@@ -388,7 +402,7 @@ void seekAccount(account* accountHead)
 		printf("\n");
 		return;
 	}
-	account* head = accountHead;
+	account* head = *accountHead;
 	char tus[50], tempPassword[50];
 	int found = 0;
 	printf("请输入用户名！\n");
@@ -418,24 +432,24 @@ void seekAccount(account* accountHead)
 }
 
 //插入账户
-account* insertAccount(account* accountHead)
+account* insertAccount(account** accountHead)
 {
 	account* cur = (account*)malloc(sizeof(account));
 	int found = 0;
 	if (cur == NULL) {
 		printf("内存分配失败\n");
-		return accountHead;
+		return *accountHead;
 	}
 	char place[50];
 	printf("请输入账号\n");
 	scanf("%49s", cur->username);
 	while (getchar() != '\n');
-	account* newnode = accountHead;
+	account* newnode = *accountHead;
 	while (newnode != NULL) {
 		if (newnode->username == cur->username) {
 			printf("账户已存在\n");
 			free(cur);
-			return accountHead;
+			return *accountHead;
 		}
 	}
 	printf("请输入密码\n");
@@ -445,7 +459,7 @@ account* insertAccount(account* accountHead)
 	scanf("%49s", place);
 	while (getchar() != '\n');
 	cur->next = NULL;
-	if (accountHead == NULL) {
+	if (*accountHead == NULL) {
 		printf("插入成功\n");
 		for (int i = 0; i < 30; i++) {
 			printf("=");
@@ -453,17 +467,17 @@ account* insertAccount(account* accountHead)
 		printf("\n");
 		return cur;
 	}
-	if (strcmp(accountHead->username, place) == 0) {
-		cur->next = accountHead;
-		accountHead = cur;
+	if (strcmp((*accountHead)->username, place) == 0) {
+		cur->next = *accountHead;
+		*accountHead = cur;
 		printf("插入成功\n");
 		for (int i = 0; i < 30; i++) {
 			printf("=");
 		}
 		printf("\n");
-		return accountHead;
+		return *accountHead;
 	}
-	account* head = accountHead;
+	account* head = *accountHead;
 	while (head != NULL) {
 		if (strcmp(head->username, place) == 0) {
 			found = 1;
@@ -482,32 +496,32 @@ account* insertAccount(account* accountHead)
 		printf("=");
 	}
 	printf("\n");
-	return accountHead;
+	return *accountHead;
 }
 
 //删除账户
-account* deleteAccount(account* accountHead)
+account* deleteAccount(account** accountHead)
 {
-	if (accountHead == NULL) {
+	if (*accountHead == NULL) {
 		printf("暂无账户\n");
 		for (int i = 0; i < 30; i++) {
 			printf("=");
 		}
 		printf("\n");
-		return accountHead;
+		return *accountHead;
 	}
 	char tus[50];
 	printf("请输入要删除的账户名\n");
 	scanf("%49s", tus);
 	while (getchar() != '\n');
-	if (strcmp(tus, accountHead->username) == 0) {
+	if (strcmp(tus, (*accountHead)->username) == 0) {
 		char tch;
 		printf("已找到账户信息，确认删除？(y/n)\n");
 		while (scanf("%c", &tch) != EOF) {
 			while (getchar() != '\n');
 			if (tch == 'Y' || tch == 'y') {
-				account* freeHead = accountHead;
-				accountHead = accountHead->next;
+				account* freeHead = *accountHead;
+				*accountHead = (*accountHead)->next;
 				free(freeHead);
 				printf("删除成功\n");
 				break;
@@ -524,10 +538,10 @@ account* deleteAccount(account* accountHead)
 			printf("=");
 		}
 		printf("\n");
-		return accountHead;
+		return *accountHead;
 	}
-	account* head = accountHead;
-	account* cur = accountHead->next;
+	account* head = *accountHead;
+	account* cur = (*accountHead)->next;
 	int found = 0;
 	while (cur != NULL) {
 		if (strcmp(cur->username, tus) == 0) {
@@ -541,11 +555,11 @@ account* deleteAccount(account* accountHead)
 					head->next = cur->next;
 					free(freeHead);
 					printf("删除成功\n");
-					return accountHead;
+					return *accountHead;
 				}
 				else if (tch == 'N' || tch == 'n') {
 					printf("已撤消删除\n");
-					return accountHead;
+					return *accountHead;
 				}
 				else {
 					printf("输入无效，请重试\n");
@@ -562,7 +576,7 @@ account* deleteAccount(account* accountHead)
 		printf("=");
 	}
 	printf("\n");
-	return accountHead;
+	return *accountHead;
 }
 
 //录入原始成绩数据
@@ -679,6 +693,8 @@ grade* recordGrade(grade* gradeHead)
 		cur->mathgrade = math;
 		cur->totalgrade = total;
 		cur->averagegrade = average;
+		cur->classSort = 0; 
+		cur->gradeSort = 0;
 		cur->next = NULL;
 
 		if (gradeHead == NULL) {
@@ -1235,9 +1251,9 @@ grade* deleteGrade(grade* gradeHead)
 }
 
 //管理员端
-void adminPortal(grade** gradeHead, account* accountHead)
+void adminPortal(grade** gradeHead, account** accountHead)
 {
-	accountHead = prelogin(*gradeHead, accountHead);
+	*accountHead = prelogin(*gradeHead, accountHead);
 	char tch, tc;
 	do {
 		printf("请选择您要进行的操作\n");
@@ -1246,16 +1262,16 @@ void adminPortal(grade** gradeHead, account* accountHead)
 		scanf("%c", &tch);
 		while (getchar() != '\n');
 		if (tch == 'A' || tch == 'a') {
-			accountHead = changePassword(accountHead);
+			*accountHead = changePassword(accountHead);
 		}
 		else if (tch == 'B' || tch == 'b') {
 			seekAccount(accountHead);
 		}
 		else if (tch == 'C' || tch == 'c') {
-			accountHead = insertAccount(accountHead);
+			*accountHead = insertAccount(accountHead);
 		}
 		else if (tch == 'D' || tch == 'd') {
-			accountHead = deleteAccount(accountHead);
+			*accountHead = deleteAccount(accountHead);
 		}
 		else if (tch == 'E' || tch == 'e') {
 			teacherPortal(gradeHead, accountHead);
@@ -1277,9 +1293,9 @@ void adminPortal(grade** gradeHead, account* accountHead)
 	return;
 }
 
-void teacherPortal(grade** gradeHead, account* accountHead)
+void teacherPortal(grade** gradeHead, account** accountHead)
 {
-	accountHead = prelogin(*gradeHead, accountHead);
+	*accountHead = prelogin(*gradeHead, accountHead);
 	char tch, tc;
 	do {
 		printf("请选择您要进行的操作\n");
@@ -1335,9 +1351,9 @@ void teacherPortal(grade** gradeHead, account* accountHead)
 	return;
 }
 
-void studentPortal(grade* gradeHead, account* accountHead)
+void studentPortal(grade* gradeHead, account** accountHead)
 {
-	accountHead = prelogin(gradeHead, accountHead);
+	*accountHead = prelogin(gradeHead, accountHead);
 	char tch, tc;
 	do {
 		printf("请选择您要进行的操作\n");
